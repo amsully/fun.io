@@ -1,0 +1,14 @@
+Notes along the way :)
+
+(after npm init has been performed)
+want to get socket.io and other deps dep
+
+npm install --save express socket.io
+npm install -g nodemon
+
+run server: nodemon app.js
+
+
+
+
+
