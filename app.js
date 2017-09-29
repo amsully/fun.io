@@ -17,7 +17,14 @@ io.on('connection', function(socket){
 
 	// send events to people in the room
 	io.sockets.in("room-" + roomno).emit('connectToRoom', "You are in room num: " + roomno);
+
+	
 });
+
+io.on('disconnect', function(socket){
+	socket.leave("room-" + roomno);
+	roomno --;
+})
 
 http.listen(3000, function(){
 	console.log('listening on *:3000');
