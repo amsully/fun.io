@@ -6,25 +6,24 @@ app.get('/', function(req, res){
 	res.sendFile( __dirname + '/index.html');
 });
 
-var roomno = 1;
+users=[]
 
 io.on('connection', function(socket){
-	// increase.. use def namespace
-	if(io.nsps['/'].adapter.rooms["room-" + roomno] && io.nsps['/'].adapter.rooms["room-"+roomno].length > 1)
-		roomno++;
+	console.log('A user connected');
+	socket.on('setUsername', function(data) {
+		if(users.indexOf(data) == -1 ) {
+			users.push(data);
+			socket.emit('userSet', {username: data});
+		} else{
+			socket.emit('userExists', data + ' usernmae is taken! Try something else')
+		}
+	})  // garbage nesting
 
-	socket.join("room-" + roomno);
-
-	// send events to people in the room
-	io.sockets.in("room-" + roomno).emit('connectToRoom', "You are in room num: " + roomno);
-
-	
+	socket.on('msg', function(data) {
+		// Send message to everyone
+		io.sockets.emit('newmsg', data);
+	});
 });
-
-io.on('disconnect', function(socket){
-	socket.leave("room-" + roomno);
-	roomno --;
-})
 
 http.listen(3000, function(){
 	console.log('listening on *:3000');
