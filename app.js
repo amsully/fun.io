@@ -6,20 +6,17 @@ app.get('/', function(req, res){
 	res.sendFile( __dirname + '/index.html');
 });
 
-var clients = 0
+var roomno = 1;
 
 io.on('connection', function(socket){
-	console.log('A user connected');
-	clients++;
+	// increase.. use def namespace
+	if(io.nsps['/'].adapter.rooms["room-" + roomno] && io.nsps['/'].adapter.rooms["room-"+roomno].length > 1)
+		roomno++;
 
-	socket.emit('newClientConnect', {description: "Hey!"})
-	socket.broadcast.emit('newClientConnect', {description:clients + ' clients connected'});
-	// io.sockets.emit('broadcast', {description: clients + ' clients connected!'})
+	socket.join("room-" + roomno);
 
-	socket.on('disconnect', function(){
-		clients--;
-		io.sockets.emit('broadcast', {description: clients + 'clients connected!'});
-	});
+	// send events to people in the room
+	io.sockets.in("room-" + roomno).emit('connectToRoom', "You are in room num: " + roomno);
 });
 
 http.listen(3000, function(){

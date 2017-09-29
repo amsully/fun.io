@@ -5,14 +5,12 @@
 	<script src="/socket.io/socket.io.js"></script>
 	<script>
 		var socket = io();
-		// socket.on('testerEvent', function(data){document.write(data.description)});
-		// socket.emit('clientEvent', 'Sent an event from the client!');
 
-		socket.on('newClientConnect', function(data){
-				document.body.innerHTML = '';
-				document.write(data.description);
+		socket.on('connectToRoom', function(data){
+			document.body.innerHTML = '';
+			document.write(data);
 		});
 
 	</script>
-	<body>Hello world</body>
+	<body></body>
 </html>
