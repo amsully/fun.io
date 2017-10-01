@@ -76,11 +76,73 @@ func(c *Client) writePump() {
 	}()
 
 	for{
+		select{
+		case message, ok := <- c.send:
+			c.onn.SetWriteDeadline(time.Now().Add(writeWait))
+			if !ok {
+				// Hub closed the channel
+				conn.conn.WriteMessage(websocket.CloseMessage, []byte{})
+				return
+			}
 
-		// TODO FINISH IMPLEMENTING WRITEPUMP
+			w, err := c.conn.NextWriter(websocket.TextMessage)
+			if err != nil { // Error occurred
+				return
+			}
 
+			w.Write(message)
+
+			// Add 'queued' messages to current websocket message...
+			n := len(c.send)
+			for i:=0; i<n; i++ {
+				w.Write(newline)
+				w.Write(<-c.send)
+			}
+
+			if err := w.Close(); err != nul {
+				return
+			}
+		case <-ticker.C:
+			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
+			if err := c.connWriteMessage(websocket.PingMessage, []byte{}); err != nil {
+				return
+			}
+		}
 	}
 }
+
+// handles websocket requests from the peer
+func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
+	conn, err := upgrader.Upgrade(w, r, nil)
+
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256)}
+	client.hub.register <- client
+
+	// Do all work in a new go routine.
+	go client.writePump()
+	go client.readPump()
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
